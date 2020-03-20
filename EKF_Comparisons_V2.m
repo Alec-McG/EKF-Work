@@ -13,11 +13,11 @@ pipe_angle = 0*pi/180;
 height = 0;
 plotStuff = 1;
 plotinloop = 0;
-revols = 1;
+revols = 10;
 
-pipe_centre = [0  0 0];
-%pipe_centre2 = [0 pipe_length*cos(pipe_angle) pipe_length*sin(pipe_angle)];
-pipe_centre2 = [0 pipe_length*cos(pipe_angle) pipe_length*sin(pipe_angle)];
+% pipe_centre = [0  0 0];
+% %pipe_centre2 = [0 pipe_length*cos(pipe_angle) pipe_length*sin(pipe_angle)];
+% pipe_centre2 = [0 pipe_length*cos(pipe_angle) pipe_length*sin(pipe_angle)];
 
 
 f = 100; %f should be devisable by fEnc and fPos otherwise decimate function messes up
@@ -36,7 +36,7 @@ varGps = 20^2; %mm^2
 varPosAngle = atan2(varGps,-varGps);
 
 dtAcc = 1/fAcc;
-varAcc = deg2rad(2)^2; %angles in rad
+varAcc = deg2rad(5)^2; %angles in rad
 
 
 varOmegaAcc = varAcc;
@@ -48,7 +48,7 @@ a_0 = deg2rad(90);
 a_dot_0 = 0;
 w_dot_0 = 0.004;
 x_0 = r_p*sin(w_0);
-y_0 = 100;
+y_0 = 0;
 z_0 = r_p*cos(w_0);
 
 p0 = [x_0 y_0 z_0 a_0 w_0];
@@ -244,13 +244,13 @@ geo_vars = [b, r_p, dtEnc];
 P_asekf_gps = zeros(6);
 %P_asekf_gps = diag([1,1,1,1,1,1]);
 X_kal_asekf_gps(1,1:6) = [x_0 y_0 z_0 a_0 w_0 w_dot_0]; % check starting pos
-variances_asekf_gps = [varEnc varGps];
+variances_asekf_gps = [varEnc varGps varAcc];
 
 
 P_asekf_acc = zeros(6);
 %P_asekf_acc = diag([1,1,1,1,1,1]);
 X_kal_asekf_acc(1,1:6) = [x_0 y_0 z_0 a_0 w_0 w_dot_0]; % check starting pos
-variances_asekf_acc = [varEnc varAcc];
+variances_asekf_acc = [varEnc varGps varAcc];
 
 
 P_asekf_gps_acc = zeros(6);
@@ -315,9 +315,9 @@ end
     plot3(x_enc, y_enc, z_enc,'b','LineWidth',2)
     plot3(X_kal_asekf_gps(:,1),X_kal_asekf_gps(:,2),X_kal_asekf_gps(:,3),'r','LineWidth',2)
     plot3(x_dec, y_dec, z_dec,'k','LineWidth',2)
-    xlabel('X')
-    ylabel('Y')
-    zlabel('Z')
+    xlabel('X [mm]')
+    ylabel('Y [mm]')
+    zlabel('Z [mm]')
     legend('Gps Meas','Encoder','EKF','Ideal')
     grid on
     
@@ -329,9 +329,9 @@ end
     plot3(accel_cart(:,1), accel_cart(:,2),accel_cart(:,3),'m','LineWidth',2)
     plot3(X_kal_asekf_acc(:,1),X_kal_asekf_acc(:,2),X_kal_asekf_acc(:,3),'r','LineWidth',2)
     plot3(x_dec, y_dec, z_dec,'k','LineWidth',2)
-    xlabel('X')
-    ylabel('Y')
-    zlabel('Z')
+    xlabel('X [mm]')
+    ylabel('Y [mm]')
+    zlabel('Z [mm]')
     legend('Encoder','Acc Meas','EKF','Ideal')
     grid on
     
@@ -343,9 +343,9 @@ end
     plot3(accel_cart(:,1), accel_cart(:,2),accel_cart(:,3),'m','LineWidth',2)
     plot3(X_kal_asekf_gps_acc(:,1),X_kal_asekf_gps_acc(:,2),X_kal_asekf_gps_acc(:,3),'r','LineWidth',2)
     plot3(x_dec, y_dec, z_dec,'k','LineWidth',2)
-    xlabel('X')
-    ylabel('Y')
-    zlabel('Z')
+    xlabel('X [mm]')
+    ylabel('Y [mm]')
+    zlabel('Z [mm]')
     grid on
     legend('Gps','Encoder','Acc Meas','EKF','Ideal')
     
@@ -358,10 +358,10 @@ end
     plot3(X_kal_asekf_acc(:,1),X_kal_asekf_acc(:,2),X_kal_asekf_acc(:,3),'m','LineWidth',2)
     plot3(X_kal_asekf_gps_acc(:,1),X_kal_asekf_gps_acc(:,2),X_kal_asekf_gps_acc(:,3),'r','LineWidth',2)
     plot3(x_dec, y_dec, z_dec,'k','LineWidth',2)
-    xlabel('X')
-    ylabel('Y')
-    zlabel('Z')
-    legend('Encoder','GPS','Acc','GPS+ACC','Ideal')
+    xlabel('X [mm]')
+    ylabel('Y [mm]')
+    zlabel('Z [mm]')
+    legend('Encoder','GPS','Accelerometer','GPS + Acceleroemter','Ideal')
     
         
 
@@ -378,49 +378,25 @@ if plotStuff ==1
    
     ss = linspace(0,360*revols,length(X_kal_asekf_gps));
     figure
-    subplot(5,1,1)
+    subplot(3,1,1)
+    title('XYZ Error')
     hold on
-    grid on
-    plot(ss,err_dead_rec(:,1),'b')
-    plot(ss,err_X_kal_asekf_gps(:,1),'g')
-    plot(ss,err_X_kal_asekf_acc(:,1),'m')
-    plot(ss,err_X_kal_asekf_gps_acc(:,1),'r')
+    mag_err_enc = sqrt(err_dead_rec(:,1).^2 +err_dead_rec(:,2).^2 +err_dead_rec(:,3).^2 );
+    mag_err_gps = sqrt(err_X_kal_asekf_gps(:,1).^2 +err_X_kal_asekf_gps(:,2).^2 + err_X_kal_asekf_gps(:,3).^2);
+    mag_err_acc = sqrt(err_X_kal_asekf_acc(:,1).^2 +err_X_kal_asekf_acc(:,2).^2+ err_X_kal_asekf_acc(:,3).^2);
+    mag_err_gps_acc = sqrt(err_X_kal_asekf_gps_acc(:,1).^2 +err_X_kal_asekf_gps_acc(:,2).^2 +err_X_kal_asekf_gps_acc(:,3).^2);
     
-    title('X Error')
-    legend('dead rec','gps only','acc only', 'gps+acc','Location','eastoutside')
-    xlabel('degrees')
+    plot(ss,mag_err_enc,'b')
+    plot(ss,mag_err_gps_acc,'r')
+    plot(ss,mag_err_gps,'g')
+    plot(ss,mag_err_acc,'m')
+    legend('Dead Rec','Gps + Acc ','GPS','Acc')
+    xlabel('deg')
     ylabel('mm')
-    xlim([0 360*revols])
-    
-    subplot(5,1,2)
-    hold on
     grid on
-    plot(ss,err_dead_rec(:,2),'b')
-    plot(ss,err_X_kal_asekf_gps(:,2),'g')
-    plot(ss,err_X_kal_asekf_acc(:,2),'m')
-    plot(ss,err_X_kal_asekf_gps_acc(:,2),'r')
     
-    title('Y Error')
-    legend('dead rec','gps only','acc only', 'gps+acc','Location','eastoutside')
-    xlabel('degrees')
-    ylabel('mm')
-    xlim([0 360*revols])
     
-    subplot(5,1,3)
-    hold on
-
-    plot(ss,err_dead_rec(:,3),'b')
-    plot(ss,err_X_kal_asekf_gps(:,3),'g')
-    plot(ss,err_X_kal_asekf_acc(:,3),'m')
-    plot(ss,err_X_kal_asekf_gps_acc(:,3),'r')
-    grid on
-    title('Z Error')
-    legend('dead rec','gps only','acc only', 'gps+acc','Location','eastoutside')
-    xlabel('degrees')
-    ylabel('mm')
-    xlim([0 360*revols])
-    
-    subplot(5,1,4)
+    subplot(3,1,2)
     hold on
     plot(ss,err_dead_rec(:,4),'b')
     plot(ss,err_X_kal_asekf_gps(:,4),'g')
@@ -428,12 +404,12 @@ if plotStuff ==1
     plot(ss,err_X_kal_asekf_gps_acc(:,4),'r')
     grid on
     title('\alpha Error')
-    legend('dead rec','gps only','acc only', 'gps+acc','Location','eastoutside')
+    legend('Dead Rec','Gps + Acc ','GPS','Acc')
     xlabel('degrees')
     ylabel('deg')
     xlim([0 360*revols])
     
-    subplot(5,1,5)
+    subplot(3,1,3)
     hold on
     plot(ss,err_dead_rec(:,5),'b')
     plot(ss,err_X_kal_asekf_gps(:,5),'g')
@@ -441,12 +417,11 @@ if plotStuff ==1
     plot(ss,err_X_kal_asekf_gps_acc(:,5),'r')
     grid on
     title('\omega Error')
-    legend('dead rec','gps only','acc only', 'gps+acc','Location','eastoutside')
+    legend('Dead Rec','Gps + Acc ','GPS','Acc')
     xlabel('degrees')
     ylabel('deg')
     xlim([0 360*revols])
 
-    
     figure
         
     subplot(5,1,1)
@@ -469,12 +444,12 @@ if plotStuff ==1
     
     
     figure
-    title('XZ Error')
+    title('XYZ Error')
     hold on
-    mag_err_enc = sqrt(err_dead_rec(:,1).^2 +err_dead_rec(:,3).^2);
-    mag_err_gps = sqrt(err_X_kal_asekf_gps(:,1).^2 +err_X_kal_asekf_gps(:,3).^2);
-    mag_err_acc = sqrt(err_X_kal_asekf_acc(:,1).^2 +err_X_kal_asekf_acc(:,3).^2);
-    mag_err_gps_acc = sqrt(err_X_kal_asekf_gps_acc(:,1).^2 +err_X_kal_asekf_gps_acc(:,3).^2);
+    mag_err_enc = sqrt(err_dead_rec(:,1).^2 +err_dead_rec(:,2).^2 +err_dead_rec(:,3).^2 );
+    mag_err_gps = sqrt(err_X_kal_asekf_gps(:,1).^2 +err_X_kal_asekf_gps(:,2).^2 + err_X_kal_asekf_gps(:,3).^2);
+    mag_err_acc = sqrt(err_X_kal_asekf_acc(:,1).^2 +err_X_kal_asekf_acc(:,2).^2+ err_X_kal_asekf_acc(:,3).^2);
+    mag_err_gps_acc = sqrt(err_X_kal_asekf_gps_acc(:,1).^2 +err_X_kal_asekf_gps_acc(:,2).^2 +err_X_kal_asekf_gps_acc(:,3).^2);
     
     plot(ss,mag_err_enc,'b')
     plot(ss,mag_err_gps_acc,'r')
@@ -512,5 +487,19 @@ plot(z_dec)
     
 end
 
+%% For Thesis
 
+figure
+title('Cartesian Comparison ')
+hold on
+
+plot3(x_enc, y_enc, z_enc,'b','LineWidth',2)
+plot3(X_kal_asekf_acc(:,1),X_kal_asekf_acc(:,2),X_kal_asekf_acc(:,3),'r','LineWidth',2)
+plot3(x_dec, y_dec, z_dec,'k','LineWidth',2)
+xlabel('X [mm]')
+ylabel('Y [mm]')
+zlabel('Z [mm]')
+legend('Dead Reckoning','EKF','Ideal')
+grid on
+axis square
 

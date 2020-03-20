@@ -9,9 +9,10 @@ function [X_hat, P_out]=asekf_acc(enc, acc, P_in, geo_vars, X_hat_prev, variance
     b = geo_vars(1);
     r_p = geo_vars(2);
     dtEnc = geo_vars(3);
-
+    
     varEnc = variances(1);
-    varAcc = variances(2);
+    varGps = variances(2);
+    varAcc = variances(3);
 
     Q = diag([varEnc varEnc]);
     R = diag([varAcc varAcc]);

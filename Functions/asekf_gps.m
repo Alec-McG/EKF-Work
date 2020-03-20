@@ -9,6 +9,7 @@ function [X_hat, P_out]=asekf_gps(enc, gps, P_in, geo_vars, X_hat_prev, variance
 
     varEnc = variances(1);
     varGps = variances(2);
+    varAcc = variances(3);
 
     Q = diag([varEnc varEnc]);
     R = diag([varGps varGps varGps]);
