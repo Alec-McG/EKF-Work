@@ -5,6 +5,7 @@ y_0 = p0(2);
 z_0 = p0(3);
 a_0 = p0(4);
 w_0 = p0(5);
+w_dot_0 = p0(6);
 
 r_p = geo_vars(1);
 b = geo_vars(2);
@@ -61,6 +62,7 @@ z_ideal(1) = z_0;
 
 a_ideal(1) = a_0;
 w_ideal(1) = w_0;
+w_dot_ideal(1) = w_dot_0;
 
 for i = 2:length(wheel_control)
     
