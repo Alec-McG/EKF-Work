@@ -27,7 +27,7 @@ y_enc(1) = p0(2);
 z_enc(1) = p0(3);
 a_enc(1) = p0(4);
 w_enc(1) = p0(5);
-
+w_dot_enc(1) = p0(6);
 
     
     wheel_control_error = [vMax+sqrt(varEnc)*randn(length(wheel_control_error),1)  vMax+sqrt(varEnc)*randn(length(wheel_control_error),1)];
